@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>PDF Extractor</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div id="panel"></div>
+  
+ 
+  
+ 
+  
+  <div class="bottom">
+    <div id="auth">
+      <button id="login-btn">
+        <img src="./assets/google.png" alt="G">
+      </button>
+      <div id="user-info" style="display: none;">
+        <div class="prof">
+        <img id="user-pic" src="" alt="Profile Picture" >
+      </div>
+        
+      </div>
+    </div>
+    
+   
+  </div>
+  
+   <div class="top">
+    <div class="lev1">
+    <button id="quiz">EXAMINE</button>
+    
+    
+      
+    
+    
+    <button id="summary">SUMMARIZE</button>
+  </div>
+  <div>
+<div class="file-input">
+  <div>
+    <label id="files" for="file">FILE</label>
+    <input type="file" name="file" id="file"/>
+  </div>
+        </div>
+  </div>
+   
+    <div class="lev2" id="button-container" >
+       
+      <button id="get-quiz">EXAMINE</button>
+      <button id="get-summary">SUMMARIZE</button>
+    </div>
+  </div>
+
+
+   <div id="board" class="b_left">
+        <button id="Dash-btn">
+          <img src="./assets/d2.png" alt="d">
+          <p>Dashboard</p>
+        </button>
+          <button id="logout-btn">Logout</button>
+
+        </div>
+  <div id="output"></div>
+  <div id="questions"></div>
+  
+  <script src="./lib/supabase.min.js"></script>
+  <script src="pdfjs/pdf.min.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

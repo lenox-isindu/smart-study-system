@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attempt Details | Smart Study</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <!-- Add Supabase before other scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <i class="fas fa-brain"></i>
+                <span>Smart Study</span>
+            </div>
+            <div class="nav-links">
+                <a href="#" id="back-to-attempts" class="nav-link">
+                    <i class="fas fa-arrow-left"></i> Back to Attempts
+                </a>
+                <a href="#" id="summary-link" class="nav-link">
+                    <i class="fas fa-chart-bar"></i> Quiz Summary
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="attempt-header">
+            <h1>Attempt Review</h1>
+            <div class="attempt-meta">
+                <div class="meta-item">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span id="attempt-date">--</span>
+                </div>
+                <div class="meta-item">
+                    <i class="fas fa-clock"></i>
+                    <span id="attempt-time">--</span>
+                </div>
+                <div class="meta-item">
+                    <i class="fas fa-stopwatch"></i>
+                    <span id="attempt-duration">--</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="performance-summary">
+            <div class="score-card">
+                <div class="score-value" id="score-percentage">--</div>
+                <div class="score-label">Overall Score</div>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-item correct">
+                    <div class="stat-value" id="correct-count">--</div>
+                    <div class="stat-label">Correct</div>
+                </div>
+                <div class="stat-item incorrect">
+                    <div class="stat-value" id="incorrect-count">--</div>
+                    <div class="stat-label">Incorrect</div>
+                </div>
+                <div class="stat-item total">
+                    <div class="stat-value" id="total-questions">--</div>
+                    <div class="stat-label">Total Questions</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="questions-container" id="quiz-attempt">
+            <div class="loading-state">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Loading attempt details...</p>
+            </div>
+            <!-- Questions will be loaded here -->
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2025 Smart Study. All rights reserved.</p>
+        </div>
+    </footer>
+    <script>
+        // Initialize Supabase
+        const SUPABASE_URL = "https://omcrqzojzbbsyznpriyf.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9tY3Jxem9qemJic3l6bnByaXlmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDEyODYxNzYsImV4cCI6MjA1Njg2MjE3Nn0.L7IQ0AZ1hg4SxZIwcz6lFw7qQbDlW-FkWlAKV0ZTi2I";
+        
+        // Create and expose the Supabase client
+        window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+            auth: {
+                flowType: 'pkce',
+                detectSessionInUrl: true,
+                persistSession: true,
+                autoRefreshToken: true
+            }
+        });
+    </script>
+    <script src="view_attempt.js"></script>
+</body>
+</html>

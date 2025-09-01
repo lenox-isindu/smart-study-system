@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upgrade to Premium - SmartStudy</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://js.paystack.co/v1/inline.js"></script>
+    <style>
+        /* Your existing CSS styles here */
+        :root {
+            --primary-color: #6e44ff;
+            --secondary-color: #4d2db7;
+            --accent-color: #8d6aff;
+            --dark-color: #1e1e24;
+            --light-color: #f8f9fa;
+            --gray-color: #6c757d;
+            --success-color: #4cc9f0;
+            --warning-color: #f8961e;
+            --danger-color: #ff4d6d;
+            --border-radius: 12px;
+            --box-shadow: 0 4px 20px rgba(110, 68, 255, 0.08);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f5f7ff 0%, #e8e2ff 100%);
+            color: var(--dark-color);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 1rem 2rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .checkout-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        .checkout-card {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 2.5rem;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .checkout-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .checkout-header h1 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+            font-size: 2rem;
+        }
+
+        .checkout-header p {
+            color: var(--gray-color);
+        }
+
+        .pricing-options {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .pricing-option {
+            border: 2px solid #e8e2ff;
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .pricing-option.selected {
+            border-color: var(--primary-color);
+            background: #f9f7ff;
+        }
+
+        .pricing-option h3 {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .price {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .price span {
+            font-size: 0.875rem;
+            color: var(--gray-color);
+            font-weight: normal;
+        }
+
+        .features {
+            list-style: none;
+            margin-top: 1rem;
+        }
+
+        .features li {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .features li i {
+            color: var(--success-color);
+        }
+
+        .payment-form {
+            margin-top: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(110, 68, 255, 0.15);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 1rem;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn:hover {
+            background: var(--secondary-color);
+        }
+
+        .btn:disabled {
+            background: var(--gray-color);
+            cursor: not-allowed;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 1.5rem;
+            color: var(--gray-color);
+            font-size: 0.875rem;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--primary-color);
+            text-decoration: none;
+            margin-bottom: 1.5rem;
+        }
+
+        .back-link:hover {
+            color: var(--secondary-color);
+        }
+
+        .error-message {
+            color: var(--danger-color);
+            text-align: center;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .currency-warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .checkout-card {
+                padding: 1.5rem;
+            }
+            
+            .checkout-header h1 {
+                font-size: 1.5rem;
+            }
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <!-- <img src="/Dashboard/assets/icons8-book-and-pencil-64 (1).png" alt="SmartStudy Logo"> -->
+            <span>Smart Study</span>
+        </div>
+    </div>
+
+    <div class="checkout-container">
+        <div class="checkout-card">
+            <a href="dashboard.html" class="back-link">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+
+            <div class="checkout-header">
+                <h1>Upgrade to Premium</h1>
+                <p>Unlock unlimited access to all features</p>
+            </div>
+
+            <div class="currency-warning" id="currency-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                <strong>Currency Notice:</strong> Please ensure your Paystack account supports Kenyan Shillings (KES). 
+                If you see an error, check your Paystack dashboard settings.
+            </div>
+
+            <div class="pricing-options">
+                <div class="pricing-option selected" data-plan="monthly">
+                    <h3>
+                        Monthly Plan
+                        <span class="price">KSh 2.00 <span>/month</span></span>
+                    </h3>
+                    <ul class="features">
+                        <li><i class="fas fa-check"></i> Unlimited quiz generation</li>
+                        <li><i class="fas fa-check"></i> Unlimited summary creation</li>
+                        <li><i class="fas fa-check"></i> Advanced analytics</li>
+                        <li><i class="fas fa-check"></i> Priority support</li>
+                        <li><i class="fas fa-check"></i> No ads</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="payment-form">
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" class="form-control" placeholder="Your email address" required>
+                </div>
+
+                <button id="pay-button" class="btn">
+                    <i class="fas fa-lock"></i> Pay KSh 2.00 Now
+                </button>
+                
+                <div class="error-message" id="error-message">
+                    There was an error processing your payment. Please try again.
+                </div>
+                
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>Processing payment...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>© 2025 SmartStudy. All rights reserved.</p>
+    </div>
+
+    <script>
+        // IMPORTANT: Replace with your actual Paystack PUBLIC KEY (starts with pk_live_)
+        const PAYSTACK_PUBLIC_KEY = 'pk_live_7a80a59b1ad961ff6f896b1b54d234a23a610244'; 
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const payButton = document.getElementById('pay-button');
+            const emailInput = document.getElementById('email');
+            const errorMessage = document.getElementById('error-message');
+            const loading = document.getElementById('loading');
+            const currencyWarning = document.getElementById('currency-warning');
+            
+            // Get user email from localStorage or prompt
+            const userEmail = localStorage.getItem('userEmail') || '';
+            if (userEmail) {
+                emailInput.value = userEmail;
+            }
+
+            payButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                if (!emailInput.value) {
+                    showError('Please enter your email address');
+                    return;
+                }
+
+                // Validate email format
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(emailInput.value)) {
+                    showError('Please enter a valid email address');
+                    return;
+                }
+
+                // Save email to localStorage
+                localStorage.setItem('userEmail', emailInput.value);
+                
+                // Show loading state
+                payButton.disabled = true;
+                loading.style.display = 'block';
+                errorMessage.style.display = 'none';
+                
+                // Initialize payment
+                initializePayment(emailInput.value);
+            });
+
+            function showError(message) {
+                errorMessage.textContent = message;
+                errorMessage.style.display = 'block';
+                payButton.disabled = false;
+                loading.style.display = 'none';
+            }
+
+            function initializePayment(email) {
+                if (typeof PaystackPop === 'undefined') {
+                    showError('Payment system is not available. Please try again later.');
+                    return;
+                }
+                
+                // Generate a more unique reference
+                const timestamp = Date.now();
+                const random = Math.floor(Math.random() * 1000000);
+                const ref = `SMARTSTUDY_${timestamp}_${random}`;
+                
+                const handler = PaystackPop.setup({
+                    key: PAYSTACK_PUBLIC_KEY,
+                    email: email,
+                    amount: 200, // 2 KSH in cents (2 * 100)
+                    currency: 'KES',
+                    ref: ref,
+                    metadata: {
+                        custom_fields: [
+                            {
+                                display_name: "Plan Type",
+                                variable_name: "plan_type",
+                                value: "monthly"
+                            }
+                        ]
+                    },
+                    onClose: function() {
+                        // Re-enable button when modal closes
+                        payButton.disabled = false;
+                        loading.style.display = 'none';
+                        console.log('Payment window closed.');
+                    },
+                    callback: function(response) {
+                        // Payment was successful
+                        alert('Payment successful! Your premium subscription is now active.');
+                        
+                        // Update user status in localStorage
+                        localStorage.setItem('userSubscription', 'active');
+                        localStorage.setItem('subscriptionEndDate', new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString());
+                        
+                        // Redirect back to dashboard
+                        window.location.href = 'dashboard.html';
+                    }
+                });
+                
+                handler.openIframe();
+            }
+
+            // Test if Paystack is loaded correctly
+            if (typeof PaystackPop === 'undefined') {
+                currencyWarning.innerHTML += '<br><strong>Paystack script failed to load. Please check your internet connection.</strong>';
+                currencyWarning.style.display = 'block';
+                payButton.disabled = true;
+            }
+        });
+    </script>
+</body>
+</html>

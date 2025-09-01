@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Session</title>
+    <link rel="stylesheet" href="quizes.css">
+</head>
+<body>
+    <div class="navbar">
+        <div class="logo">Smart Study</div>
+        <div class="profile-section">
+            <button class="attempts" id="attempts">Attempts</button>
+        </div>
+    </div>
+    <div class="quiz-container" id="quiz-container">
+        <div class="quiz-header">
+            <div class="progress-bar">
+                <div class="progress"></div>
+            </div>
+            <div id="question-counter" class="question-counter"></div>
+        </div>
+
+        <div class="question-card">
+            <h2 id="question-text"></h2>
+            <div id="options-container" class="options-container"></div>
+        </div>
+
+        <div class="quiz-controls">
+            <button id="prev-btn" class="nav-btn">Previous</button>
+            <button id="next-btn" class="nav-btn">Next</button>
+            <button id="submit-btn" class="nav-btn">Submit</button>
+        </div>
+
+        <div class="results-card">
+            <h3>Your Score:</h3>
+            <div class="score-display">
+                <span id="score"></span>
+                <span id="percentage"></span>
+            </div>
+            <button id="retry-btn" class="nav-btn">Retry</button>
+            <button id="close-btn" class="nav-btn">Close</button>
+            <button id="review-btn" class="nav-btn">Review Answers</button>
+        </div>
+        <div id="review-modal" class="review-modal">
+            <div class="review-content">
+                <h3>Quiz Review</h3>
+                <div id="review-questions" class="review-questions"></div>
+                <button id="nav-btn" >Close</button>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="quizes.js" type="module"></script>
+</body>
+</html>

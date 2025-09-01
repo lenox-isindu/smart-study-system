@@ -1,0 +1,150 @@
+/* Add to style.css */
+.quiz-container {
+    max-width: 800px;
+    margin: 80px auto;
+    padding: 2rem;
+}
+
+.question-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.options-container {
+    display: grid;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.option {
+    padding: 1rem;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.option.selected {
+    border-color: #4CAF50;
+    background: #f0fff4;
+}
+
+.quiz-controls {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.results-card {
+    display: none;
+    text-align: center;
+    padding: 2rem;
+}
+
+.quiz-container.show-results .results-card {
+    display: block;
+}
+
+.quiz-container.show-results .question-card,
+.quiz-container.show-results .quiz-controls {
+    display: none;
+}
+
+/* Review Modal */
+.review-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+}
+
+.review-content {
+    background: white;
+    padding: 2rem;
+    border-radius: 10px;
+    max-width: 800px;
+    margin: 2rem auto;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.review-question {
+    padding: 1rem;
+    margin: 1rem 0;
+    border-radius: 8px;
+}
+
+.review-question.correct {
+    background: #f0fff4;
+    border: 2px solid #4CAF50;
+}
+
+.review-question.incorrect {
+    background: #fff0f0;
+    border: 2px solid #ff4444;
+}
+
+.review-question-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.status {
+    font-weight: bold;
+}
+
+.review-answers > div {
+    margin: 0.5rem 0;
+}
+
+.explanation {
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 6px;
+    margin-top: 1rem;
+}
+
+/* Attempt counter */
+.attempt-number {
+    font-size: 0.8em;
+    color: #666;
+}
+
+/* Retry button emphasis */
+#retry-btn {
+    background-color: #ffeb3b;
+    color: #000;
+}
+
+#retry-btn:hover {
+    background-color: #fdd835;
+}
+
+.navbar {
+    position: fixed;
+    width: 100%;
+    height: 60px;
+    top: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #ffffff;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+.attempts{
+    border: none;
+    background-color: #bbbbbb;
+    padding: 10px;
+    margin: 20px;
+    border-radius: 7px;
+    cursor: pointer;
+}

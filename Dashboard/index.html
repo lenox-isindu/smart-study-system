@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+    <script src="https://unpkg.com/@supabase/supabase-js"></script>
+    <style>
+        .container {
+            max-width: 400px;
+            margin: 2rem auto;
+            padding: 2rem;
+            text-align: center;
+        }
+        .google-btn {
+            background: #4285F4;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 1rem auto;
+        }
+        .google-icon {
+            width: 20px;
+            height: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to PDF Assistant</h1>
+        <button id="google-login" class="google-btn">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" 
+                 class="google-icon" 
+                 alt="Google logo">
+            Continue with Google
+        </button>
+        <p id="auth-status"></p>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="index.js"></script>
+</body>
+</html>

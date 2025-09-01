@@ -1,0 +1,103 @@
+// Access Firebase functions from the global scope
+const db = window.db;
+const collection = window.collection;
+const getDocs = window.getDocs;
+
+// Function to render the quiz
+async function renderQuiz() {
+  try {
+    // Fetch the document from the 'user_history' collection
+    const userHistoryRef = collection(db, 'user_history');
+    const snapshot = await getDocs(userHistoryRef);
+
+    if (snapshot.empty) {
+      alert('No documents found in the user_history collection.');
+      return;
+    }
+
+    // Assuming there's only one document
+    const doc = snapshot.docs[0];
+    const quizString = doc.data().file_quiz;
+
+    if (!quizString) {
+      alert('No quiz found in the document.');
+      return;
+    }
+
+    // Parse the quiz string
+    const questions = quizString.split(/\s{2,}/); // Split by two or more spaces
+    const quizContainer = document.getElementById('quiz-container');
+
+    // Render each question
+    questions.forEach((questionBlock, index) => {
+      const questionParts = questionBlock.trim().split(/\n/);
+      const questionText = questionParts[0].trim();
+      const choices = questionParts.slice(1, -1).map(choice => choice.trim());
+      const correctAnswer = questionParts[questionParts.length - 1].trim().match(/{(.*?)}/)[1];
+
+      // Create a div for the question
+      const questionDiv = document.createElement('div');
+      questionDiv.className = 'question';
+      questionDiv.innerHTML = `<strong>Question ${index + 1}:</strong> ${questionText}`;
+
+      // Create a div for the choices
+      const choicesDiv = document.createElement('div');
+      choicesDiv.className = 'choices';
+
+      // Add choices as radio buttons
+      choices.forEach((choice, choiceIndex) => {
+        const choiceId = `q${index}-c${choiceIndex}`;
+        const choiceText = choice.replace(/^[A-Z]\)\s*/, ''); // Remove the "A)", "B)", etc. prefix
+
+        const choiceContainer = document.createElement('div');
+        const input = document.createElement('input');
+        input.type = 'radio'; // Use 'checkbox' for multiple correct answers
+        input.id = choiceId;
+        input.name = `q${index}`;
+        input.value = String.fromCharCode(65 + choiceIndex);
+
+        const label = document.createElement('label');
+        label.htmlFor = choiceId;
+        label.textContent = choiceText;
+
+        choiceContainer.appendChild(input);
+        choiceContainer.appendChild(label);
+        choicesDiv.appendChild(choiceContainer);
+      });
+
+      // Append question and choices to the quiz container
+      questionDiv.appendChild(choicesDiv);
+      quizContainer.appendChild(questionDiv);
+    });
+
+    // Add event listener to the submit button
+    document.getElementById('submit-btn').addEventListener('click', () => {
+      calculateScore(questions);
+    });
+  } catch (error) {
+    console.error('Error rendering the quiz:', error);
+    alert('An error occurred while rendering the quiz. Please check the console for details.');
+  }
+}
+
+// Function to calculate the score
+function calculateScore(questions) {
+  let score = 0;
+
+  questions.forEach((questionBlock, index) => {
+    const questionParts = questionBlock.trim().split(/\n/);
+    const correctAnswer = questionParts[questionParts.length - 1].trim().match(/{(.*?)}/)[1];
+
+    // Get the user's selected answer
+    const selectedAnswer = document.querySelector(`input[name="q${index}"]:checked`);
+    if (selectedAnswer && selectedAnswer.value === correctAnswer) {
+      score++;
+    }
+  });
+
+  // Display the final score
+  alert(`Quiz completed! Your score is ${score}/${questions.length}.`);
+}
+
+// Render the quiz when the page loads
+window.onload = renderQuiz;

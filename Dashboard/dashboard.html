@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartStudy | Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://js.paystack.co/v1/inline.js"></script>
+</head>
+<body class="light-mode">
+    
+    <div class="app-container">
+        <!-- Side Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logoimage">
+                    <img src="/Dashboard/assets/icons8-book-and-pencil-64 (1).png" alt="SmartStudy Logo">
+                </div>
+                <div class="logo">
+                    <span>Smart Study</span>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <ul>
+                    <li class="active">
+                        <a href="#">
+                            <i class="fas fa-home"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="stats.html">
+                            <i class="fas fa-chart-line"></i>
+                            <span>Analytics</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="checkout.html">
+                            <i class="fas fa-crown"></i>
+                            <span>Upgrade Plan</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <!-- Quota Display in Sidebar -->
+                <div class="quota-sidebar" id="quota-sidebar">
+                    <div class="quota-header">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>Usage Summary</span>
+                    </div>
+                    <div class="quota-item">
+                        <div class="quota-type">
+                            <i class="fas fa-question-circle"></i>
+                            <span>Quizzes</span>
+                        </div>
+                        <div class="quota-count">
+                            <span id="sidebar-quiz-count">5</span>/5
+                        </div>
+                    </div>
+                    <div class="quota-item">
+                        <div class="quota-type">
+                            <i class="fas fa-file-alt"></i>
+                            <span>Summaries</span>
+                        </div>
+                        <div class="quota-count">
+                            <span id="sidebar-summary-count">5</span>/5
+                        </div>
+                    </div>
+                    <div class="quota-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="quota-progress"></div>
+                        </div>
+                        <div class="progress-text" id="quota-percentage">0% Used</div>
+                    </div>
+                </div>
+                
+                <div class="user-profile">
+                    <div class="profile-image">
+                        <img id="user-profile-pic" class="profile-picture" alt="Profile picture" style="display: none;">
+                        <i class="fas fa-user fallback-icon"></i>
+                    </div>
+                    <div class="profile-info">
+                        <span class="username" id="username"></span>
+                        <span class="user-email" id="user-email"></span>
+                    </div>
+                    <button class="logout-button" id="logout">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+                <button class="theme-toggle" id="theme-toggle">
+                    <i class="fas fa-moon"></i>
+                    <span>Dark Mode</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Mobile Sidebar Toggle Button -->
+        <button class="sidebar-toggle" id="sidebar-toggle">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <div class="sidebar-overlay"></div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="main-header">
+                <div class="header-actions">
+                    <button class="new-document-btn" id="new-document-btn">
+                        <i class="fas fa-plus"></i>
+                        <span>New Document</span>
+                    </button>
+                </div>
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="search" placeholder="Search documents, quizzes...">
+                    <div id="search-suggestions"></div>
+                </div>
+            </header>
+            
+            <div class="content-container">
+                <!-- User Status Display -->
+                <div id="user-status" style="display: none;"></div>
+                
+                <div class="content-header">
+                    <div class="welcome-message">
+                        <h2 id="time-greeting">Good </h2>
+                        <span id="username-display"></span>
+                    </div>
+                
+                    <div class="view-toggle">
+                        <button class="view-btn active" data-view="grid">
+                            <i class="fas fa-th-large"></i>
+                        </button>
+                        <button class="view-btn" data-view="list">
+                            <i class="fas fa-list"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="time-filters">
+                    <button class="time-filter active" data-period="today">Today</button>
+                    <button class="time-filter" data-period="week">This Week</button>
+                    <button class="time-filter" data-period="month">This Month</button>
+                    <button class="time-filter" data-period="all">All Time</button>
+                </div>
+                
+                <section class="dashboard-section">
+                    <div class="documents-grid" id="documents-container">
+                        <!-- Documents will be loaded here -->
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Premium Upgrade Flashcard -->
+    <div id="premium-flashcard" class="premium-flashcard" style="display: none;">
+        <div class="flashcard-content">
+            <span class="close-flashcard">&times;</span>
+            <h3><i class="fas fa-crown"></i> Upgrade to Premium</h3>
+            <p>You've reached your free limit. Upgrade to unlock unlimited quiz and summary generation!</p>
+            <div class="premium-features">
+                <p><i class="fas fa-check"></i> Unlimited quiz generation</p>
+                <p><i class="fas fa-check"></i> Unlimited summary generation</p>
+                <p><i class="fas fa-check"></i> Advanced analytics</p>
+                <p><i class="fas fa-check"></i> Priority support</p>
+            </div>
+            <button id="upgrade-button" class="upgrade-button">
+                Upgrade Now - $8/month
+            </button>
+        </div>
+    </div>
+
+    <!-- New Document Modal -->
+    <div class="modal" id="new-document-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Create New Study Material</h2>
+                <button class="modal-action-btn close-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="new-document-form">
+                    <div class="form-group">
+                        <label for="document-type">Document Type</label>
+                        <select id="document-type" class="form-control">
+                            <option value="quiz">Quiz</option>
+                            <option value="summary">Summary</option>
+                            <option value="flashcards">Flashcards</option>
+                            <option value="notes">Notes</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="document-title">Title</label>
+                        <input type="text" id="document-title" class="form-control" placeholder="Enter document title">
+                    </div>
+                    <div class="form-group">
+                        <label for="document-content">Content</label>
+                        <textarea id="document-content" class="form-control" rows="5" placeholder="Enter your content here..."></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn secondary-btn close-modal">Cancel</button>
+                        <button type="submit" class="btn primary-btn">Create Document</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Document Preview Modal -->
+    <div class="modal" id="content-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title">Document Preview</h2>
+                <div class="modal-actions">
+                    <button class="modal-action-btn">
+                        <i class="fas fa-download"></i>
+                    </button>
+                    <button class="modal-action-btn close-modal">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <!-- Content will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <div class="document-meta">
+                    <span class="meta-item">
+                        <i class="fas fa-calendar"></i>
+                        <span id="document-date">Loading...</span>
+                    </span>
+                    <span class="meta-item">
+                        <i class="fas fa-file-alt"></i>
+                        <span id="document-type">Quiz</span>
+                    </span>
+                </div>
+                <button class="btn primary-btn open-full-btn">
+                    <i class="fas fa-external-link-alt"></i>
+                    Open Full Document
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="dashboard.js"></script>
+</body>
+</html>

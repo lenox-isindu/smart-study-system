@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Content Details</title>
+    <link rel="stylesheet" href="history.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="navbar">
+        <!-- Same navbar as dashboard -->
+        <div class="logo">
+            <i class="fas fa-brain"></i>
+            <span>Smart Study</span>
+        </div>
+        <div class="profile-section">
+            <button class="back-button" id="back-btn">
+                <i class="fas fa-arrow-left"></i> Back
+            </button>
+            <div class="profile-icon">
+                <img id="user-profile-pic" class="profile-picture" 
+                     alt="Profile picture" 
+                     style="display: none;">
+                <i class="fas fa-user fallback-icon"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Document Review Container - Modified but keeping all original divs -->
+    <div class="container-detail-container">
+        <div id="error-message" class="error-message" style="display: none;"></div>
+        <div id="loading" class="loading">
+            <h1>Document Review</h1>
+            <div class="loading-meta">
+                <h2>Loading document...</h2>
+                <p>Loading date...</p>
+                <p>Loading questions...</p>
+            </div>
+
+            <div class="summary-preview">
+                <h3>Summary</h3>
+                <div class="preview-content">
+                    <p>- Quiz</p>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="document-info">
+                <h2>Document Summary</h2>
+                <p class="document-id">No document ID found in URL.</p>
+                <div class="download-options">
+                    <button class="download-btn">
+                        <i class="fas fa-file-pdf"></i> Download PDF
+                    </button>
+                    <button class="download-btn">
+                        <i class="fas fa-file-alt"></i> Download TXT
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Original content detail section (will be shown when loaded) -->
+        <div id="content-detail" style="display: none;">
+            <h1 id="detail-title">Document Review</h1>
+            <div class="content-meta">
+                <span id="detail-date">Loading date...</span>
+                <span id="detail-count">Loading questions...</span>
+            </div>
+            
+            <div class="section-toggle">
+                <button class="toggle-btn active" data-target="summaries">Summaries</button>
+                <button class="toggle-btn" data-target="quizzes">Quizzes</button>
+            </div>
+
+            <div class="summary-preview">
+                <h3>Summary</h3>
+                <div id="summaries-list" class="content-section active preview-content"></div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div id="quizzes-list" class="content-section">
+                <!-- Quizzes will be grouped by date here -->
+            </div>
+
+            <div class="document-info">
+                <h2>Document Summary</h2>
+                <p id="document-id" class="document-id">No document ID found in URL.</p>
+                <div class="download-options">
+                    <button class="download-btn" id="download-pdf">
+                        <i class="fas fa-file-pdf"></i> Download PDF
+                    </button>
+                    <button class="download-btn" id="download-txt">
+                        <i class="fas fa-file-alt"></i> Download TXT
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="history-detail.js" type="module"></script>
+</body>
+</html>

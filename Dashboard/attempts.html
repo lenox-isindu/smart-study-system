@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Attempts | Smart Study</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="attempts.css">
+    <!-- Load Supabase BEFORE your attempts.js script -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Firebase scripts can remain if you're using both -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <i class="fas fa-brain"></i>
+                <span>Smart Study</span>
+            </div>
+            <div class="nav-links">
+                <a href="dashboard.html" class="nav-link">
+                    <i class="fas fa-home"></i> Dashboard
+                </a>
+                <a href="#" id="back-to-quiz" class="nav-link">
+                    <i class="fas fa-arrow-left"></i> Back to Quiz
+                </a>
+                <a href="#" id="summary-link" class="nav-link">
+                    <i class="fas fa-chart-bar"></i> Summary
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="header-section">
+            <h1>Your Quiz Attempts</h1>
+            <div class="stats-summary">
+                <div class="stat-card">
+                    <i class="fas fa-clock"></i>
+                    <span id="total-time">--</span>
+                    <p>Total Time</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-trophy"></i>
+                    <span id="best-score">--</span>
+                    <p>Best Score</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-list-ol"></i>
+                    <span id="attempt-count">--</span>
+                    <p>Total Attempts</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="attempts-container">
+            <div class="filter-controls">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="search-attempts" placeholder="Search attempts...">
+                </div>
+                <div class="sort-controls">
+                    <span>Sort by:</span>
+                    <select id="sort-attempts">
+                        <option value="newest">Newest First</option>
+                        <option value="oldest">Oldest First</option>
+                        <option value="highest">Highest Score</option>
+                        <option value="lowest">Lowest Score</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="attempts-list" class="attempts-list">
+                <!-- Attempts will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2025 Smart Study. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Initialize Supabase first -->
+    <script>
+        // Initialize Supabase after the library loads
+        window.supabase = supabase.createClient(
+            "https://omcrqzojzbbsyznpriyf.supabase.co",
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9tY3Jxem9qemJic3l6bnByaXlmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDEyODYxNzYsImV4cCI6MjA1Njg2MjE3Nn0.L7IQ0AZ1hg4SxZIwcz6lFw7qQbDlW-FkWlAKV0ZTi2I",
+            {
+                auth: {
+                    flowType: 'pkce',
+                    detectSessionInUrl: true,
+                    persistSession: true,
+                    autoRefreshToken: true
+                }
+            }
+        );
+    </script>
+
+    <!-- Then load your attempts script -->
+    <script src="attempts.js"></script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Quiz Side Panel</title>
+    <link rel="stylesheet" href="sidepanel.css">
+</head>
+<body>
+    <div class="header">
+        <div class="logo-container">
+            <img src="./assets/log.png" alt="Logo" id="logo">
+
+        </div>
+        <div id="sidepanel-user-info" style="display: none; align-items: center; justify-content: center; gap: 8px; margin: 5px 10px 16px 0;">
+  <img id="sidepanel-user-pic" style="width: 40px; height: 40px; border-radius: 50%; margin-right: 5px;">
+  <span id="sidepanel-user-name" style="display:none;"></span>
+</div>
+    </div>
+    <div id="summary-container"></div>
+    <div id="quiz-container"></div>
+    <script src="./lib/supabase.min.js"></script>
+    <script src="sidepannel.js" defer></script>
+</body>
+</html>
