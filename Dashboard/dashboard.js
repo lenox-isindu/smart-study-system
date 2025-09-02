@@ -1,8 +1,6 @@
-
 // Configuration - Replace with your Supabase credentials
-const SUPABASE_URL = "https://omcrqzojzbbsyznpriyf.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9tY3Jxem9qemJic3l6bnByaXlmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDEyODYxNzYsImV4cCI6MjA1Njg2MjE3Nn0.L7IQ0AZ1hg4SxZIwcz6lFw7qQbDlW-FkWlAKV0ZTi2I";
-
+const SUPABASE_URL = CONFIG.SUPABASE_URL;
+const SUPABASE_ANON_KEY = CONFIG.SUPABASE_ANON_KEY;
 // Initialize Supabase
 const supabase = window.supabase.createClient(
     SUPABASE_URL,
@@ -23,7 +21,7 @@ let currentView = 'grid';
 let currentFilter = 'today';
 let allDocuments = [];
 let seenFileNames = new Set();
-let userQuota = null;
+let userMonthlyUsage = null;
 let userSubscription = null;
 
 // DOM Elements
@@ -377,62 +375,183 @@ function downloadDocument(item) {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 }
-
-// Fetch user quota information
-async function fetchUserQuota() {
+// Add this function to check for existing file names
+async function checkExistingFileName(fileName, contentType) {
     try {
         const { data, error } = await supabase
-            .from('user_quotas')
-            .select('*')
+            .from('generated_content')
+            .select('id')
             .eq('user_id', currentUser.id)
+            .eq('file_name', fileName)
+            .eq('content_type', contentType)
             .single();
 
-        if (error) {
-            if (error.code === 'PGRST116') { // No rows found
-                // Create initial quota record
-                const { data: newQuota, error: insertError } = await supabase
-                    .from('user_quotas')
-                    .insert([{ 
-                        user_id: currentUser.id,
-                        quiz_generation_limit: 5,
-                        summary_generation_limit: 5,
-                        quiz_generation_count: 0,
-                        summary_generation_count: 0
-                    }])
-                    .select()
-                    .single();
-                
-                if (insertError) throw insertError;
-                userQuota = newQuota;
-            } else {
-                throw error;
-            }
-        } else {
-            userQuota = data;
+        // If no error, it means a document with this name already exists
+        return !!data;
+    } catch (error) {
+        // If we get an error (like no rows found), it means the name is available
+        return false;
+    }
+}
+
+// Update the form submission to check for duplicates:
+if (elements.newDocumentForm) {
+    let isSubmitting = false;
+    
+    elements.newDocumentForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        if (isSubmitting) {
+            console.log('Form is already submitting, please wait...');
+            return;
         }
         
-        // Update UI with quota information
+        isSubmitting = true;
+        
+        const title = document.getElementById('document-title').value;
+        const type = document.getElementById('document-type').value;
+        const content = document.getElementById('document-content').value;
+        
+        if (!title || !content) {
+            showError('Please fill in all fields');
+            isSubmitting = false;
+            return;
+        }
+        
+        try {
+            // Check if document with same name already exists
+            const exists = await checkExistingFileName(title, type);
+            if (exists) {
+                alert(`A ${type} with the name "${title}" already exists. Please choose a different name.`);
+                isSubmitting = false;
+                return;
+            }
+            
+            // Check quota before creating document
+            const quotaCheck = await checkQuotaBeforeGeneration(type);
+            if (!quotaCheck.canProceed) {
+                alert(quotaCheck.message);
+                isSubmitting = false;
+                return;
+            }
+            
+            let documentContent = {};
+            const now = new Date().toISOString();
+            
+            if (type === 'quiz') {
+                documentContent = {
+                    questions: content.split('\n\n').map(q => {
+                        const [question, answer] = q.split('\n');
+                        return { question, answer: answer || 'No answer provided' };
+                    })
+                };
+            } else if (type === 'summary') {
+                documentContent = {
+                    summary: content,
+                    key_points: content.split('\n').filter(line => line.trim())
+                };
+            } else {
+                documentContent = { text: content };
+            }
+            
+            // SINGLE insert operation
+            const { data, error } = await supabase
+                .from('generated_content')
+                .insert([{
+                    user_id: currentUser.id,
+                    file_name: title,
+                    content_type: type,
+                    content: documentContent,
+                    created_at: now
+                }])
+                .select();
+            
+            if (error) throw error;
+            
+            console.log('Document created successfully:', data);
+            
+            // Refresh monthly usage count
+            await fetchUserMonthlyUsage();
+            await fetchGeneratedContent();
+            
+            elements.newDocumentModal.style.display = 'none';
+            elements.newDocumentForm.reset();
+            
+        } catch (error) {
+            console.error('Error creating document:', error);
+            showError('Failed to create document. Please try again.');
+        } finally {
+            isSubmitting = false;
+        }
+    });
+}
+// Fetch user monthly usage
+// Fetch user monthly usage - MORE ACCURATE VERSION
+async function fetchUserMonthlyUsage() {
+    try {
+        const now = new Date();
+        const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+        
+        console.log('Fetching monthly usage for period:', firstDayOfMonth, 'to', lastDayOfMonth);
+        
+        // Get count of quizzes generated this month
+        const { count: quizCount, error: quizError } = await supabase
+            .from('generated_content')
+            .select('id', { count: 'exact' })
+            .eq('user_id', currentUser.id)
+            .eq('content_type', 'quiz')
+            .gte('created_at', firstDayOfMonth.toISOString())
+            .lte('created_at', lastDayOfMonth.toISOString());
+
+        // Get count of summaries generated this month  
+        const { count: summaryCount, error: summaryError } = await supabase
+            .from('generated_content')
+            .select('id', { count: 'exact' })
+            .eq('user_id', currentUser.id)
+            .eq('content_type', 'summary')
+            .gte('created_at', firstDayOfMonth.toISOString())
+            .lte('created_at', lastDayOfMonth.toISOString());
+
+        if (quizError || summaryError) throw quizError || summaryError;
+
+        userMonthlyUsage = {
+            quiz_count: quizCount || 0,
+            summary_count: summaryCount || 0,
+            quiz_limit: 5,
+            summary_limit: 5
+        };
+        
+        console.log('Monthly usage results:', userMonthlyUsage);
         updateQuotaUI();
         
     } catch (error) {
-        console.error('Error fetching user quota:', error);
+        console.error('Error fetching monthly usage:', error);
+        // Set default values if there's an error
+        userMonthlyUsage = {
+            quiz_count: 0,
+            summary_count: 0,
+            quiz_limit: 5,
+            summary_limit: 5
+        };
+        updateQuotaUI();
     }
 }
 
 // Update quota UI display for sidebar
 function updateQuotaUI() {
-    if (!userQuota) return;
+    if (!userMonthlyUsage) return;
     
-    const quizzesLeft = Math.max(0, userQuota.quiz_generation_limit - userQuota.quiz_generation_count);
-    const summariesLeft = Math.max(0, userQuota.summary_generation_limit - userQuota.summary_generation_count);
+    const quizzesLeft = Math.max(0, userMonthlyUsage.quiz_limit - userMonthlyUsage.quiz_count);
+    const summariesLeft = Math.max(0, userMonthlyUsage.summary_limit - userMonthlyUsage.summary_count);
     
     // Update sidebar display
-    document.getElementById('sidebar-quiz-count').textContent = userQuota.quiz_generation_count;
-    document.getElementById('sidebar-summary-count').textContent = userQuota.summary_generation_count;
+    document.getElementById('sidebar-quiz-count').textContent = userMonthlyUsage.quiz_count;
+    document.getElementById('sidebar-summary-count').textContent = userMonthlyUsage.summary_count;
     
     // Calculate and update progress
-    const totalUsed = userQuota.quiz_generation_count + userQuota.summary_generation_count;
-    const totalLimit = userQuota.quiz_generation_limit + userQuota.summary_generation_limit;
+    const totalUsed = userMonthlyUsage.quiz_count + userMonthlyUsage.summary_count;
+    const totalLimit = userMonthlyUsage.quiz_limit + userMonthlyUsage.summary_limit;
     const percentage = Math.min(100, Math.round((totalUsed / totalLimit) * 100));
     
     document.getElementById('quota-progress').style.width = `${percentage}%`;
@@ -468,19 +587,36 @@ function updateQuotaUI() {
 }
 
 // Fetch user subscription status
+// Fetch user subscription status - FIXED VERSION
 async function fetchUserSubscription() {
     try {
+        // Reset subscription status first
+        userSubscription = null;
+        
         // Check localStorage first for subscription status
         const localSubscription = localStorage.getItem('userSubscription');
-        if (localSubscription === 'active') {
-            userSubscription = {
-                status: 'active',
-                current_period_end: localStorage.getItem('subscriptionEndDate')
-            };
-            return;
+        const subscriptionEndDate = localStorage.getItem('subscriptionEndDate');
+        
+        if (localSubscription === 'active' && subscriptionEndDate) {
+            const endDate = new Date(subscriptionEndDate);
+            const now = new Date();
+            
+            // Only consider it active if the end date is in the future
+            if (endDate > now) {
+                userSubscription = {
+                    status: 'active',
+                    current_period_end: subscriptionEndDate
+                };
+                console.log('Using active subscription from localStorage');
+                return;
+            } else {
+                // Clear expired subscription
+                localStorage.removeItem('userSubscription');
+                localStorage.removeItem('subscriptionEndDate');
+            }
         }
         
-        // Get all subscriptions for user and filter client-side
+        // Get all subscriptions for user and filter for ACTIVE ones only
         const { data: subscriptions, error } = await supabase
             .from('user_subscriptions')
             .select('*')
@@ -492,23 +628,49 @@ async function fetchUserSubscription() {
             return;
         }
 
-        // Find active or trialing subscription
-        userSubscription = subscriptions.find(sub => 
-            sub.status === 'active' || sub.status === 'trialing'
-        );
+        if (!subscriptions || subscriptions.length === 0) {
+            console.log('No subscriptions found for user');
+            userSubscription = null;
+            return;
+        }
+
+        // Find ACTIVE subscription (not just active or trialing)
+        const now = new Date();
+        userSubscription = subscriptions.find(sub => {
+            const endDate = new Date(sub.current_period_end);
+            return sub.status === 'active' && endDate > now;
+        });
+
+        if (userSubscription) {
+            console.log('Active subscription found:', userSubscription);
+            // Store in localStorage for future reference
+            localStorage.setItem('userSubscription', 'active');
+            localStorage.setItem('subscriptionEndDate', userSubscription.current_period_end);
+        } else {
+            console.log('No active subscription found');
+            userSubscription = null;
+        }
 
     } catch (error) {
         console.error('Error fetching subscription:', error);
+        userSubscription = null;
     }
 }
-
 // Update UI based on user status
+// Update UI based on user status - DEBUG VERSION
 function updateUIWithUserStatus() {
     if (!elements.userStatus) return;
+    
+    console.log('Updating UI with user status:', {
+        hasSubscription: !!userSubscription,
+        subscription: userSubscription,
+        monthlyUsage: userMonthlyUsage
+    });
     
     elements.userStatus.style.display = 'block';
     
     if (userSubscription) {
+        console.log('Showing premium user UI');
         elements.userStatus.innerHTML = `
             <div style="background: #e8f5e8; padding: 10px; border-radius: 8px; margin-bottom: 15px;">
                 <span style="color: #27ae60;">
@@ -524,8 +686,9 @@ function updateUIWithUserStatus() {
             elements.upgradeButton.onclick = manageSubscription;
         }
     } else {
-        const quizzesLeft = userQuota ? Math.max(0, userQuota.quiz_generation_limit - userQuota.quiz_generation_count) : 0;
-        const summariesLeft = userQuota ? Math.max(0, userQuota.summary_generation_limit - userQuota.summary_generation_count) : 0;
+        console.log('Showing free user UI');
+        const quizzesLeft = userMonthlyUsage ? Math.max(0, userMonthlyUsage.quiz_limit - userMonthlyUsage.quiz_count) : 5;
+        const summariesLeft = userMonthlyUsage ? Math.max(0, userMonthlyUsage.summary_limit - userMonthlyUsage.summary_count) : 5;
         
         elements.userStatus.innerHTML = `
             <div style="background: #fff3e0; padding: 10px; border-radius: 8px; margin-bottom: 15px;">
@@ -533,12 +696,12 @@ function updateUIWithUserStatus() {
                     <i class="fas fa-user"></i> Free Account
                 </span>
                 <br>
-                <small>Quizzes left: ${quizzesLeft} | Summaries left: ${summariesLeft}</small>
+                <small>Quizzes left this month: ${quizzesLeft} | Summaries left: ${summariesLeft}</small>
             </div>
         `;
         
         if (elements.upgradeButton) {
-            elements.upgradeButton.textContent = 'Upgrade Now - $8/month';
+            elements.upgradeButton.textContent = 'Upgrade Now - KSh 2/month';
             elements.upgradeButton.onclick = function() {
                 window.location.href = 'checkout.html';
             };
@@ -556,9 +719,9 @@ function checkIfNeedsUpgrade() {
         return;
     }
 
-    if (userQuota && 
-        (userQuota.quiz_generation_count >= userQuota.quiz_generation_limit ||
-         userQuota.summary_generation_count >= userQuota.summary_generation_limit)) {
+    if (userMonthlyUsage && 
+        (userMonthlyUsage.quiz_count >= userMonthlyUsage.quiz_limit ||
+         userMonthlyUsage.summary_count >= userMonthlyUsage.summary_limit)) {
         showPremiumFlashcard();
     }
 }
@@ -585,61 +748,24 @@ function manageSubscription() {
     alert('Subscription management portal coming soon!');
 }
 
-// Update quota when user generates content - FIXED VERSION
-async function incrementQuotaCount(contentType) {
+// Check quota before generating content
+async function checkQuotaBeforeGeneration(contentType) {
     if (userSubscription) {
-        // Premium users don't have quotas
         return { canProceed: true };
     }
 
-    try {
-        const countField = `${contentType}_generation_count`;
-        const limitField = `${contentType}_generation_limit`;
-        
-        // Check if user has reached their limit
-        if (userQuota && userQuota[countField] >= userQuota[limitField]) {
-            return { 
-                canProceed: false, 
-                message: `You've reached your ${contentType} generation limit. Upgrade to premium for unlimited access.` 
-            };
-        }
-        
-        // First get the current count to ensure we're incrementing correctly
-        const { data: currentData, error: fetchError } = await supabase
-            .from('user_quotas')
-            .select(countField)
-            .eq('user_id', currentUser.id)
-            .single();
-
-        if (fetchError) throw fetchError;
-        
-        const newCount = (currentData[countField] || 0) + 1;
-        
-        const { data, error } = await supabase
-            .from('user_quotas')
-            .update({ 
-                [countField]: newCount,
-                updated_at: new Date().toISOString()
-            })
-            .eq('user_id', currentUser.id)
-            .select()
-            .single();
-
-        if (error) throw error;
-        
-        userQuota = data;
-        updateQuotaUI();
-        updateUIWithUserStatus();
-        
-        // Check if user reached limit after this operation
-        checkIfNeedsUpgrade();
-        
-        return { canProceed: true };
-        
-    } catch (error) {
-        console.error('Error updating quota:', error);
-        return { canProceed: false, message: 'Error updating quota' };
+    // Check monthly usage
+    const count = contentType === 'quiz' ? userMonthlyUsage.quiz_count : userMonthlyUsage.summary_count;
+    const limit = contentType === 'quiz' ? userMonthlyUsage.quiz_limit : userMonthlyUsage.summary_limit;
+    
+    if (count >= limit) {
+        return { 
+            canProceed: false, 
+            message: `You've reached your monthly ${contentType} generation limit. Upgrade to premium for unlimited access.` 
+        };
     }
+    
+    return { canProceed: true };
 }
 
 function setupEventListeners() {
@@ -729,71 +855,9 @@ function setupEventListeners() {
         });
     }
     
-    // New document form submission - FIXED QUOTA HANDLING
-    if (elements.newDocumentForm) {
-        elements.newDocumentForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const title = document.getElementById('document-title').value;
-            const type = document.getElementById('document-type').value;
-            const content = document.getElementById('document-content').value;
-            
-            if (!title || !content) {
-                showError('Please fill in all fields');
-                return;
-            }
-            
-            try {
-                // Check quota before creating document
-                const quotaCheck = await incrementQuotaCount(type);
-                if (!quotaCheck.canProceed) {
-                    alert(quotaCheck.message);
-                    return;
-                }
-                
-                let documentContent = {};
-                const now = new Date().toISOString();
-                
-                if (type === 'quiz') {
-                    documentContent = {
-                        questions: content.split('\n\n').map(q => {
-                            const [question, answer] = q.split('\n');
-                            return { question, answer: answer || 'No answer provided' };
-                        })
-                    };
-                } else if (type === 'summary') {
-                    documentContent = {
-                        summary: content,
-                        key_points: content.split('\n').filter(line => line.trim())
-                    };
-                } else {
-                    documentContent = { text: content };
-                }
-                
-                const { data, error } = await supabase
-                    .from('generated_content')
-                    .insert([{
-                        user_id: currentUser.id,
-                        file_name: title,
-                        content_type: type,
-                        content: documentContent,
-                        created_at: now
-                    }]);
-                
-                if (error) throw error;
-                
-                await fetchGeneratedContent();
-                elements.newDocumentModal.style.display = 'none';
-                elements.newDocumentForm.reset();
-                
-            } catch (error) {
-                console.error('Error creating document:', error);
-                showError('Failed to create document. Please try again.');
-            }
-        });
-    }
-    
-    // Premium flashcard close button
+    // New document form submission
+   // New document form submission - FIXED DUPLICATE ISSUE
+  
     const closeFlashcard = document.querySelector('.close-flashcard');
     if (closeFlashcard) {
         closeFlashcard.addEventListener('click', hidePremiumFlashcard);
@@ -897,9 +961,9 @@ async function initializeDashboard() {
         updateTimeGreeting();
         displayUsername();
         
-        // Get user quota and subscription status
+        // Get user monthly usage and subscription status
         await Promise.all([
-            fetchUserQuota(),
+            fetchUserMonthlyUsage(),
             fetchUserSubscription(),
             fetchGeneratedContent()
         ]);
@@ -935,6 +999,63 @@ function showLoading() {
 function hideLoading() {
     // Hide loading state
 }
+// Add this function to help debug subscription issues
+async function debugSubscription() {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) return;
+    
+    console.log('=== DEBUG SUBSCRIPTION INFO ===');
+    console.log('User ID:', user.id);
+    console.log('LocalStorage subscription:', localStorage.getItem('userSubscription'));
+    console.log('LocalStorage end date:', localStorage.getItem('subscriptionEndDate'));
+    
+    // Check what's actually in the database
+    const { data: subscriptions, error } = await supabase
+        .from('user_subscriptions')
+        .select('*')
+        .eq('user_id', user.id);
 
+    console.log('Database subscriptions:', subscriptions);
+    console.log('Current userSubscription state:', userSubscription);
+    console.log('==============================');
+}
+
+// Call this in initializeDashboard for debugging:
+async function initializeDashboard() {
+    showLoading();
+    try {
+        checkSavedTheme();
+        updateTimeGreeting();
+        displayUsername();
+        
+        // Get user monthly usage and subscription status
+        await Promise.all([
+            fetchUserMonthlyUsage(),
+            fetchUserSubscription(),
+            fetchGeneratedContent()
+        ]);
+        
+        // DEBUG: Check subscription status
+        await debugSubscription();
+        
+        // Update UI with user status
+        updateUIWithUserStatus();
+        
+        // Check if user needs to upgrade
+        checkIfNeedsUpgrade();
+        
+        setupEventListeners();
+        
+        // Update greeting every minute
+        setInterval(updateTimeGreeting, 60000);
+        
+    } catch (error) {
+        console.error('Dashboard error:', error);
+        showError('Failed to initialize dashboard');
+    } finally {
+        hideLoading();
+    }
+}
 // Initialize when DOM loads
 document.addEventListener('DOMContentLoaded', initializeAuth);
